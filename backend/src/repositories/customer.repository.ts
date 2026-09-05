@@ -1,88 +1,68 @@
-import { appwriteDatabases, isAppwriteConfigured } from '../config/appwrite';
-import { config } from '../config';
-import { InMemoryStore } from './in_memory_store';
+import UserModel from '../models/User';
+import CustomerModel from '../models/Customer';
+import CustomerTierModel from '../models/CustomerTier';
 import { Customer, CustomerTier, User } from '../types';
+import { InMemoryStore } from './in_memory_store';
+
+const cleanDoc = (doc: any) => {
+  if (!doc) return null;
+  const obj = doc.toObject ? doc.toObject() : doc;
+  obj.id = obj._id.toString();
+  delete obj._id;
+  delete obj.__v;
+  return obj;
+};
 
 export class UserRepository {
   public static async findById(id: string): Promise<User | null> {
-    if (isAppwriteConfigured && appwriteDatabases) {
-      try {
-        const doc = await appwriteDatabases.getDocument(
-          config.appwrite.databaseId,
-          config.appwrite.collections.users,
-          id
-        );
-        return doc as unknown as User;
-      } catch (err) {
-        // fallback to in-memory
-      }
-    }
-    return InMemoryStore.users.find((u) => u.id === id) || null;
+    const doc = await UserModel.findById(id).lean();
+    if (!doc) return null;
+    return cleanDoc(doc) as unknown as User;
   }
 
   public static async findByEmail(email: string): Promise<User | null> {
-    const normalized = email.toLowerCase().trim();
-    return InMemoryStore.users.find((u) => u.email.toLowerCase() === normalized) || null;
+    const doc = await UserModel.findOne({ email }).lean();
+    if (!doc) return null;
+    return cleanDoc(doc) as unknown as User;
   }
 
   public static async getAll(): Promise<User[]> {
-    return InMemoryStore.users;
+    const docs = await UserModel.find().lean();
+    return docs.map(cleanDoc) as unknown as User[];
   }
 }
 
 export class CustomerRepository {
   public static async getAll(): Promise<Customer[]> {
-    if (isAppwriteConfigured && appwriteDatabases) {
-      try {
-        const res = await appwriteDatabases.listDocuments(
-          config.appwrite.databaseId,
-          config.appwrite.collections.customers
-        );
-        return res.documents as unknown as Customer[];
-      } catch (err) {
-        // fallback to memory
-      }
-    }
-    return InMemoryStore.customers;
+    const docs = await CustomerModel.find().lean();
+    return docs.map(cleanDoc) as unknown as Customer[];
   }
 
   public static async findById(id: string): Promise<Customer | null> {
-    if (isAppwriteConfigured && appwriteDatabases) {
-      try {
-        const doc = await appwriteDatabases.getDocument(
-          config.appwrite.databaseId,
-          config.appwrite.collections.customers,
-          id
-        );
-        return doc as unknown as Customer;
-      } catch (err) {
-        // fallback
-      }
-    }
-    return InMemoryStore.customers.find((c) => c.id === id) || null;
+    const doc = await CustomerModel.findById(id).lean();
+    if (!doc) return null;
+    return cleanDoc(doc) as unknown as Customer;
   }
 
   public static async create(customer: Customer): Promise<Customer> {
-    InMemoryStore.customers.push(customer);
-    return customer;
+    const doc = await CustomerModel.create(customer);
+    return cleanDoc(doc) as unknown as Customer;
   }
 
   public static async update(id: string, partial: Partial<Customer>): Promise<Customer | null> {
-    const idx = InMemoryStore.customers.findIndex((c) => c.id === id);
-    if (idx === -1) return null;
-    InMemoryStore.customers[idx] = {
-      ...InMemoryStore.customers[idx],
-      ...partial,
-      updatedAt: new Date().toISOString(),
-    };
-    return InMemoryStore.customers[idx];
+    const doc = await CustomerModel.findByIdAndUpdate(id, partial, { new: true }).lean();
+    if (!doc) return null;
+    return cleanDoc(doc) as unknown as Customer;
   }
 
   public static async getTiers(): Promise<CustomerTier[]> {
-    return InMemoryStore.customerTiers;
+    const docs = await CustomerTierModel.find().lean();
+    return docs.map(cleanDoc) as unknown as CustomerTier[];
   }
 
   public static async getTierById(tierId: string): Promise<CustomerTier | null> {
-    return InMemoryStore.customerTiers.find((t) => t.id === tierId) || null;
+    const doc = await CustomerTierModel.findById(tierId).lean();
+    if (!doc) return InMemoryStore.customerTiers.find((t) => t.id === tierId) || null;
+    return cleanDoc(doc) as unknown as CustomerTier;
   }
 }

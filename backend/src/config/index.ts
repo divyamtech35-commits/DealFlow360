@@ -5,6 +5,7 @@ export const config = {
   port: parseInt(process.env.PORT || '5000', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
   jwtSecret: process.env.JWT_SECRET || 'dealflow360_hackathon_super_secret_jwt_key_2026',
+  mongoUri: process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/dealflow360',
   appwrite: {
     endpoint: process.env.APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1',
     projectId: process.env.APPWRITE_PROJECT_ID || 'dealflow360',
