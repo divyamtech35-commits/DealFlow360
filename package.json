@@ -8,7 +8,8 @@
     "dev:frontend": "npm --prefix frontend run dev",
     "build": "npm --prefix backend run build && npm --prefix frontend run build",
     "test": "npm --prefix backend test",
-    "seed": "npm --prefix backend run seed"
+    "seed": "npm --prefix backend run seed",
+    "bootstrap:appwrite": "npm --prefix backend run bootstrap:appwrite"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

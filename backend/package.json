@@ -9,7 +9,8 @@
     "start": "node dist/server.js",
     "test": "vitest run",
     "test:watch": "vitest",
-    "seed": "ts-node-dev --transpile-only src/seeds/run-seed.ts"
+    "seed": "ts-node-dev --transpile-only src/seeds/run-seed.ts",
+    "bootstrap:appwrite": "npm run build && node dist/scripts/bootstrap-appwrite.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
